@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Spell Master — Word Games</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+:root{
+  --pink:#FF2D78;
+  --gold:#FFD700;
+  --purple:#BF5FFF;
+  --cyan:#00C8FF;
+  --orange:#FF6B00;
+  --bg:#07071A;
+}
+
+body{
+  background:var(--bg);
+  font-family:'Nunito',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+  color:#fff;
+}
+
+/* ── Star field ── */
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d) ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:.1;transform:scale(1);}50%{opacity:.9;transform:scale(1.5);}}
+
+/* ── Nebula glow behind header ── */
+.nebula{
+  position:fixed;top:-200px;left:50%;transform:translateX(-50%);
+  width:900px;height:500px;
+  background:radial-gradient(ellipse at center, rgba(191,95,255,.18) 0%, rgba(255,45,120,.1) 40%, transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+/* ── Layout ── */
+.container{
+  position:relative;z-index:2;
+  max-width:1100px;
+  margin:0 auto;
+  padding:0 24px 80px;
+}
+
+/* ── Header ── */
+header{
+  text-align:center;
+  padding:64px 20px 48px;
+}
+
+.logo-title{
+  font-family:'Bangers',cursive;
+  font-size:clamp(3.5rem,10vw,7rem);
+  letter-spacing:8px;
+  line-height:1;
+  background:linear-gradient(135deg, #FF2D78 0%, #FFD700 45%, #FF6B00 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 40px rgba(255,45,120,.35));
+  animation:titleGlow 4s ease-in-out infinite;
+}
+@keyframes titleGlow{
+  0%,100%{filter:drop-shadow(0 0 20px rgba(255,45,120,.3));}
+  50%{filter:drop-shadow(0 0 50px rgba(255,213,0,.45));}
+}
+
+.logo-sub{
+  font-family:'Bangers',cursive;
+  font-size:clamp(1rem,3vw,1.5rem);
+  letter-spacing:10px;
+  color:rgba(255,255,255,.35);
+  margin-top:8px;
+  text-transform:uppercase;
+}
+
+.header-divider{
+  display:flex;align-items:center;gap:16px;
+  width:320px;margin:28px auto 0;
+}
+.header-divider span{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);}
+.header-divider em{color:rgba(255,255,255,.3);font-style:normal;font-size:.9rem;letter-spacing:2px;}
+
+/* ── Cards grid ── */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:24px;
+  margin-top:20px;
+}
+
+.card{
+  position:relative;
+  display:flex;flex-direction:column;align-items:center;
+  padding:36px 24px 28px;
+  border-radius:20px;
+  background:var(--card-bg);
+  border:1.5px solid var(--card-border);
+  text-decoration:none;color:#fff;
+  cursor:pointer;
+  overflow:hidden;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease;
+  animation:cardIn .6s ease both;
+}
+.card:nth-child(1){animation-delay:.1s;}
+.card:nth-child(2){animation-delay:.2s;}
+.card:nth-child(3){animation-delay:.3s;}
+.card:nth-child(4){animation-delay:.4s;}
+
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(40px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+.card::before{
+  content:'';
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%, var(--card-glow) 0%, transparent 65%);
+  opacity:.7;
+  transition:opacity .3s;
+}
+
+.card:hover{
+  transform:translateY(-10px) scale(1.02);
+  box-shadow:0 24px 60px var(--card-shadow);
+}
+.card:hover::before{opacity:1;}
+
+/* Shimmer line at top */
+.card::after{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--card-accent),transparent);
+}
+
+.card-emoji{
+  font-size:3rem;
+  margin-bottom:14px;
+  filter:drop-shadow(0 0 12px var(--card-accent));
+  animation:emojiFloat 3s ease-in-out infinite;
+}
+@keyframes emojiFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+
+.card-name{
+  font-family:'Bangers',cursive;
+  font-size:2.4rem;
+  letter-spacing:4px;
+  color:var(--card-accent);
+  text-shadow:0 0 20px var(--card-accent);
+  line-height:1;
+}
+
+.card-title{
+  font-size:.8rem;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.45);
+  margin-top:4px;
+  font-weight:700;
+}
+
+.card-desc{
+  font-size:.9rem;
+  color:rgba(255,255,255,.6);
+  text-align:center;
+  line-height:1.5;
+  margin:16px 0 22px;
+  font-weight:700;
+}
+
+.play-btn{
+  display:inline-block;
+  padding:10px 28px;
+  border-radius:50px;
+  background:linear-gradient(135deg,var(--card-accent),var(--card-accent2,var(--card-accent)));
+  color:#fff;
+  font-family:'Bangers',cursive;
+  font-size:1.15rem;
+  letter-spacing:3px;
+  box-shadow:0 4px 20px var(--card-shadow);
+  transition:transform .2s, box-shadow .2s;
+}
+.card:hover .play-btn{
+  transform:scale(1.07);
+  box-shadow:0 8px 30px var(--card-shadow);
+}
+
+/* Individual card themes */
+.card-hunter{
+  --card-accent:#FF2D78;
+  --card-accent2:#FF6B00;
+  --card-bg:rgba(255,45,120,.06);
+  --card-border:rgba(255,45,120,.25);
+  --card-glow:rgba(255,45,120,.2);
+  --card-shadow:rgba(255,45,120,.35);
+}
+.card-kaia{
+  --card-accent:#BF5FFF;
+  --card-accent2:#FF2D78;
+  --card-bg:rgba(191,95,255,.06);
+  --card-border:rgba(191,95,255,.25);
+  --card-glow:rgba(191,95,255,.2);
+  --card-shadow:rgba(191,95,255,.35);
+}
+.card-willow{
+  --card-accent:#FFD700;
+  --card-accent2:#FF6B00;
+  --card-bg:rgba(255,215,0,.06);
+  --card-border:rgba(255,215,0,.25);
+  --card-glow:rgba(255,215,0,.2);
+  --card-shadow:rgba(255,215,0,.35);
+}
+.card-ben{
+  --card-accent:#00C8FF;
+  --card-accent2:#BF5FFF;
+  --card-bg:rgba(0,200,255,.06);
+  --card-border:rgba(0,200,255,.25);
+  --card-glow:rgba(0,200,255,.2);
+  --card-shadow:rgba(0,200,255,.35);
+}
+
+/* ── Footer ── */
+footer{
+  position:relative;z-index:2;
+  text-align:center;
+  padding:24px;
+  color:rgba(255,255,255,.2);
+  font-size:.8rem;
+  letter-spacing:2px;
+  text-transform:uppercase;
+}
+
+/* ── Sparkle burst ── */
+.sparkle{
+  position:fixed;
+  pointer-events:none;
+  font-size:1.2rem;
+  animation:sparkleUp var(--dur,.8s) ease-out both;
+  z-index:999;
+}
+@keyframes sparkleUp{
+  from{opacity:1;transform:translateY(0) scale(1);}
+  to{opacity:0;transform:translateY(-80px) scale(0.5);}
+}
+
+/* ── Responsive ── */
+@media(max-width:600px){
+  .cards{grid-template-columns:1fr 1fr;}
+  .card{padding:28px 16px 22px;}
+  .card-name{font-size:1.9rem;}
+}
+@media(max-width:380px){
+  .cards{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="nebula"></div>
+<div id="stars"></div>
+
+<div class="container">
+  <header>
+    <div class="logo-title">SPELL MASTER</div>
+    <div class="logo-sub">Word Games</div>
+    <div class="header-divider">
+      <span></span><em>choose your player</em><span></span>
+    </div>
+  </header>
+
+  <div class="cards">
+
+    <!-- Hunter -->
+    <a class="card card-hunter" href="hunter-wordgame.html">
+      <div class="card-emoji">⚔️</div>
+      <div class="card-name">HUNTER</div>
+      <div class="card-title">Word Slayer</div>
+      <div class="card-desc">Slay every word — one letter at a time!</div>
+      <span class="play-btn">✨ LET'S SPELL! ✨</span>
+    </a>
+
+    <!-- Kaia -->
+    <a class="card card-kaia" href="kaia-wordgame.html">
+      <div class="card-emoji">🎵</div>
+      <div class="card-name">KAIA</div>
+      <div class="card-title">Swift Spellmaster</div>
+      <div class="card-desc">Shake it off — one spelled word at a time!</div>
+      <span class="play-btn">✨ LET'S SPELL! ✨</span>
+    </a>
+
+    <!-- Willow -->
+    <a class="card card-willow" href="willow-wordgame.html">
+      <div class="card-emoji">🌟</div>
+      <div class="card-name">WILLOW</div>
+      <div class="card-title">Spell It Off</div>
+      <div class="card-desc">The spelling stage is yours — time to shine!</div>
+      <span class="play-btn">✨ LET'S SPELL! ✨</span>
+    </a>
+
+    <!-- Ben -->
+    <a class="card card-ben" href="ben-wordgame.html">
+      <div class="card-emoji">⚽</div>
+      <div class="card-name">BEN</div>
+      <div class="card-title">Word Cup</div>
+      <div class="card-desc">Kick your way through the spelling field!</div>
+      <span class="play-btn">✨ LET'S SPELL! ✨</span>
+    </a>
+
+  </div>
+</div>
+
+<footer>Spell Master Word Games &nbsp;✦&nbsp; Made with ❤️ by Andrew Blyskosz</footer>
+
+<script>
+// Star field
+const starsEl = document.getElementById('stars');
+for(let i=0;i<140;i++){
+  const s=document.createElement('div');
+  s.className='star';
+  const size=Math.random()*2.5+0.5;
+  s.style.cssText=`width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${2+Math.random()*5}s;animation-delay:${Math.random()*5}s;`;
+  starsEl.appendChild(s);
+}
+
+// Sparkle on click
+document.querySelectorAll('.card').forEach(card=>{
+  card.addEventListener('click',e=>{
+    for(let i=0;i<8;i++){
+      const sp=document.createElement('div');
+      sp.className='sparkle';
+      sp.textContent=['✨','⭐','💫','🌟','⚡'][Math.floor(Math.random()*5)];
+      sp.style.cssText=`left:${e.clientX+Math.random()*80-40}px;top:${e.clientY+Math.random()*20-10}px;--dur:${0.6+Math.random()*0.6}s;animation-delay:${Math.random()*0.15}s;`;
+      document.body.appendChild(sp);
+      setTimeout(()=>sp.remove(),1400);
+    }
+  });
+});
+</script>
+</body>
+</html>
