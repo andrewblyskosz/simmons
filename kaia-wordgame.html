@@ -378,7 +378,7 @@ function Game() {
         const data = JSON.parse(ev.target.result);
         const loaded = Array.isArray(data.spellForceWords) ? data.spellForceWords : [];
         if(!loaded.length){ showToast("❌ No words found in file!","error"); return; }
-        setWords([...loaded,...Array(18).fill("")].slice(0,18));
+        setWords([...loaded,...Array(20).fill("")].slice(0,18));
         showToast("✅ Loaded " + loaded.filter(Boolean).length + " words!");
       } catch { showToast("❌ Invalid file.","error"); }
     };
@@ -515,7 +515,7 @@ function Game() {
             <button className="badge badge-load" onClick={()=>document.getElementById("fileInput").click()}>📂 Load Words</button>
           </div>
           <div className="words-grid">
-            {Array(18).fill(0).map((_,i)=>{
+            {Array(20).fill(0).map((_,i)=>{
               const w = words[i].trim().toLowerCase();
               const result = results.find(r => r.word.toLowerCase() === w);
               const highlight = result
