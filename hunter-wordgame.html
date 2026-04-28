@@ -266,9 +266,66 @@ body::before{
   font-size:1.4rem;cursor:pointer;line-height:1;
 }
 .modal-close:hover{color:#fff;}
+
+/* ── ROTATE PROMPT ── */
+.rotate-screen{
+  display:none;
+  position:fixed;inset:0;z-index:9999;
+  background:#07071A;
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:20px;text-align:center;padding:30px;
+}
+.rotate-screen.show{display:flex;}
+.rotate-title{
+  font-family:'Bangers',cursive;font-size:2rem;letter-spacing:3px;
+  background:linear-gradient(135deg,#FF2D78,#FFD700);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.rotate-sub{
+  font-family:sans-serif;font-size:.95rem;font-weight:700;
+  color:rgba(255,255,255,.55);line-height:1.6;
+}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+@keyframes phone-rock{0%,100%{transform:rotate(0deg);}50%{transform:rotate(25deg);}}
+@media(orientation:landscape){.rotate-screen{display:none !important;}}
+
+</style>
+<style>
+a[href="index.html"]:hover{
+  transform:translateY(-2px) scale(1.06) !important;
+  background:linear-gradient(135deg,rgba(255,45,120,0.5),rgba(191,95,255,0.5)) !important;
+  box-shadow:0 6px 24px rgba(255,45,120,0.45) !important;
+  border-color:rgba(255,45,120,0.8) !important;
+}
 </style>
 </head>
 <body>
+
+<!-- Rotate prompt -->
+<div class="rotate-screen" id="rotatePrompt">
+  <div style="position:relative;width:120px;height:120px;display:flex;align-items:center;justify-content:center;">
+    <div style="position:absolute;inset:0;animation:spin 3s linear infinite;">
+      <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 20,60 A 40,40 0 0,1 60,20" fill="none" stroke="#FF2D78" stroke-width="3.5" stroke-linecap="round"/>
+        <polygon points="60,10 55,22 65,22" fill="#FF2D78"/>
+        <path d="M 100,60 A 40,40 0 0,1 60,100" fill="none" stroke="#FF2D78" stroke-width="3.5" stroke-linecap="round"/>
+        <polygon points="60,110 55,98 65,98" fill="#FF2D78"/>
+      </svg>
+    </div>
+    <div style="position:absolute;inset:-14px;animation:spin 5s linear infinite reverse;">
+      <svg viewBox="0 0 148 148" width="148" height="148" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 14,74 A 60,60 0 0,1 74,14" fill="none" stroke="rgba(0,245,255,.5)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="8 6"/>
+        <path d="M 134,74 A 60,60 0 0,1 74,134" fill="none" stroke="rgba(0,245,255,.5)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="8 6"/>
+        <polygon points="74,4 68,16 80,16" fill="rgba(0,245,255,.7)"/>
+        <polygon points="74,144 68,132 80,132" fill="rgba(0,245,255,.7)"/>
+      </svg>
+    </div>
+    <div style="font-size:3.2rem;animation:phone-rock 1.5s ease-in-out infinite;z-index:1;">📱</div>
+  </div>
+  <div class="rotate-title">ROTATE YOUR DEVICE</div>
+  <div class="rotate-sub">This game is designed for landscape mode.<br/>Turn your phone sideways for the best experience!</div>
+</div>
+
 <div id="bg-glow"></div>
 <div id="app"></div>
 <input id="fileInput" type="file" accept=".json" style="display:none"/>
@@ -687,5 +744,21 @@ function Game() {
 ReactDOM.createRoot(document.getElementById("app")).render(<Game/>);
 </script>
 <a href="index.html" style="position:fixed;top:14px;right:14px;background:linear-gradient(135deg,rgba(255,45,120,0.25),rgba(191,95,255,0.25));border:1px solid rgba(255,45,120,0.4);border-radius:20px;padding:5px 14px;color:#fff;font-size:11px;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:5px;letter-spacing:1px;z-index:9999;">&#9733; SPELL MASTER HOME</a>
+
+<script>
+function checkOrientation(){
+  const prompt = document.getElementById('rotatePrompt');
+  if(!prompt) return;
+  const isMobile = window.innerWidth < 900;
+  const isPortrait = window.innerHeight > window.innerWidth;
+  if(isMobile && isPortrait){ prompt.classList.add('show'); }
+  else { prompt.classList.remove('show'); }
+}
+window.addEventListener('resize', checkOrientation);
+window.addEventListener('orientationchange', checkOrientation);
+document.addEventListener('DOMContentLoaded', checkOrientation);
+setTimeout(checkOrientation, 300);
+</script>
+
 </body>
 </html>
