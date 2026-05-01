@@ -310,7 +310,7 @@ a[href="index.html"]:hover{
 </div>
 <div id="bg-glow"></div>
 <div id="app"></div>
-<input id="fileInput" type="file" accept=".json" style="display:none"/>
+
 
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -348,7 +348,7 @@ function Game() {
   const JSONBIN_ID = "69f4bb15856a682189951df2";
   const JSONBIN_KEY = "$2a$10$ZmohFEKQaFz/Ag31Eov7I.pYkzvW4GDsS1lXI0HcUG/Qv6sqOBVA.";
 
-  // Load words from JSONbin on mount
+  // Load full state from JSONbin on mount
   React.useEffect(()=>{
     fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
       headers: { "X-Master-Key": JSONBIN_KEY }
@@ -361,6 +361,15 @@ function Game() {
         setWords([...loaded, ...Array(Math.max(0,20-loaded.length)).fill("")]);
       }
       if(record.grade) setSelectedGrade(record.grade);
+      // Restore mid-game progress
+      if(record.phase === "game" && record.shuffled && record.shuffled.length > 0){
+        setShuffled(record.shuffled);
+        setIdx(record.wordIdx || 0);
+        setResults(record.results || []);
+        setTries(record.tries || 0);
+        setPhase("game");
+        setTimeout(()=>showToast("▶ Resuming your game from word "+(record.wordIdx+1)+"!","success"),500);
+      }
     })
     .catch(()=>{});
   },[]);
@@ -373,7 +382,7 @@ function Game() {
       fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "X-Master-Key": JSONBIN_KEY },
-        body: JSON.stringify({ words: words.map(w=>w.trim()), grade: selectedGrade })
+        body: JSON.stringify({ words: words.map(w=>w.trim()), grade: selectedGrade, phase, shuffled, wordIdx: idx, results, tries })
       }).catch(()=>{});
     }, 1500);
   },[words, selectedGrade]);
@@ -410,31 +419,7 @@ function Game() {
   const showToast = (msg, type="success") => {
     setToast({msg,type});
     setTimeout(()=>setToast(null), 2800);
-  };
-
-  const saveWords = () => {
-    const blob = new Blob([JSON.stringify({spellForceWords:words.map(w=>w.trim())},null,2)],{type:"application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href=url; a.download="spelling-words.json"; a.click();
-    URL.revokeObjectURL(url);
-    showToast("✅ Words saved as spelling-words.json!");
-  };
-
-  const loadWords = (e) => {
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      try {
-        const data = JSON.parse(ev.target.result);
-        const loaded = Array.isArray(data.spellForceWords) ? data.spellForceWords : [];
-        if(!loaded.length){ showToast("❌ No words found in file!","error"); return; }
-        setSelectedGrade(null); setWords([...loaded,...Array(20).fill("")].slice(0,18));
-        showToast("✅ Loaded " + loaded.filter(Boolean).length + " words!");
-      } catch { showToast("❌ Invalid file.","error"); }
-    };
-    reader.readAsText(file);
+  };    reader.readAsText(file);
     e.target.value="";
   };
 
@@ -555,7 +540,7 @@ function Game() {
   },[]);
 
   return (
-    <div id="app-inner" style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",minHeight:"100vh",padding:"0 20px 18px"}}>
+    <div id="app-inner" style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"100vh",padding:"0 20px 18px"}}>
 
       {flash && <div className={"flash flash-"+flash} key={flash+Date.now()}/>}
       {toast && <div className={"toast toast-"+toast.type}>{toast.msg}</div>}
@@ -566,11 +551,6 @@ function Game() {
       {/* ══ SETUP ══ */}
       {phase==="setup" && (
         <div className="card" style={{maxHeight:"calc(100vh - 80px)",overflowY:"auto",marginBottom:"24px"}}>
-          <div className="file-row">
-            <button className="badge badge-save" onClick={saveWords}>💾 Save Words</button>
-            <button className="badge badge-load" onClick={()=>document.getElementById("fileInput").click()}>📂 Load Words</button>
-          </div>
-          
           <div style={{marginBottom:'12px'}}>
             <div style={{fontSize:'0.7rem',letterSpacing:'3px',color:'rgba(255,255,255,0.55)',textTransform:'uppercase',textAlign:'center',marginBottom:'8px',fontWeight:700}}>Auto-Fill by Grade</div>
             <div style={{display:'flex',gap:'8px',justifyContent:'center',flexWrap:'wrap'}}>
@@ -604,7 +584,7 @@ function Game() {
                   <span className="word-num">{i+1}</span>
                   <input className="word-input" placeholder={"word "+(i+1)} value={words[i]}
                     style={highlight}
-                    onChange={e=>{ const u=[...words]; u[i]=e.target.value; setWords(u); }}
+                    onChange={e=>{ const u=[...words]; u[i]=e.target.value; setWords(u); setSelectedGrade(null); }}
                     onKeyDown={e=>{
                       if(e.key==="Enter"){
                         const all=document.querySelectorAll(".word-input");
@@ -625,7 +605,7 @@ function Game() {
             </button>
           </div>
 
-          <button className="btn btn-start" onClick={startGame}>⚡ BEGIN THE BATTLE ⚡</button>
+          <button className="btn btn-start" onClick={startGame}><span>✨</span><span>LET'S SPELL!</span><span>✨</span></button>
 
           {/* How to Play + About — small, under begin button */}
           <div style={{display:"flex",gap:"10px",marginTop:"10px",position:"relative",zIndex:1}}>
