@@ -272,6 +272,41 @@ body::before{
 @keyframes phone-rock{0%,100%{transform:rotate(0deg);}50%{transform:rotate(25deg);}}
 @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 @media(orientation:landscape){.rotate-screen{display:none !important;}}
+
+@media(min-width:1024px) and (orientation:landscape){
+  .card{
+    max-width:1400px !important;
+    padding:28px 32px !important;
+  }
+  .words-grid{
+    grid-template-columns:repeat(6,1fr) !important;
+    gap:8px !important;
+  }
+  .word-input{
+    font-size:.85rem !important;
+    padding:5px 6px 5px 20px !important;
+  }
+  .btn-start{
+    font-size:1.3rem !important;
+    padding:12px 0 !important;
+  }
+  .btn-submit{
+    font-size:1.3rem !important;
+    padding:16px 0 !important;
+  }
+  .btn-secondary{
+    font-size:1rem !important;
+    padding:14px 6px !important;
+  }
+  .answer-input{
+    font-size:1.6rem !important;
+    padding:18px 22px !important;
+  }
+  #app-inner{
+    padding:20px 40px 30px !important;
+  }
+}
+
 </style>
 <style>
 a[href="index.html"]:hover{
@@ -371,12 +406,15 @@ function Game() {
         setTimeout(()=>showToast("▶ Resuming your game from word "+(record.wordIdx+1)+"!","success"),500);
       }
     })
-    .catch(()=>{});
+    .catch(()=>{ loadedRef.current = true; });
+    loadedRef.current = true;
   },[]);
 
   // Save words to JSONbin whenever words or grade change
   const saveTimeoutRef = React.useRef(null);
+  const loadedRef = React.useRef(false);
   React.useEffect(()=>{
+    if(!loadedRef.current) return;
     clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = setTimeout(()=>{
       fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
@@ -385,7 +423,7 @@ function Game() {
         body: JSON.stringify({ words: words.map(w=>w.trim()), grade: selectedGrade, phase, shuffled, wordIdx: idx, results, tries })
       }).catch(()=>{});
     }, 1500);
-  },[words, selectedGrade]);
+  },[words, selectedGrade, phase, idx, results, tries]);
 
 
   const gradeWords = {
@@ -499,7 +537,12 @@ function Game() {
   const submit = () => {
     if(!answer.trim()||feedback) return;
     const word = shuffled[idx];
-    const ok = answer.trim().toLowerCase()===word.toLowerCase();
+    // Normalize apostrophes/smart quotes before comparing
+    const normalize = s => s.toLowerCase()
+      .replace(/[\u2018\u2019\u02bc\u0060\u00b4]/g, "'")
+      .replace(/[\u201c\u201d]/g, '"')
+      .trim();
+    const ok = normalize(answer.trim()) === normalize(word);
     if(ok) {
       doFlash("gold"); burst(); triggerBgGlow("correct");
       setFeedback("correct");
