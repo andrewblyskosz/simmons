@@ -957,7 +957,7 @@ function Game() {
           {/* Clear all words */}
           <div style={{textAlign:"center",marginBottom:"10px"}}>
             <button className="btn btn-secondary" style={{fontSize:"0.85rem",padding:"7px 20px"}}
-              onClick={()=>{ setWords(Array(20).fill("")); setResults([]); setTotalHints(0); setHints(0); setSelectedGrade(null); setHintedPos([]); }}>
+              onClick={()=>{ if(!window.confirm('Clear all words? This cannot be undone.')) return; setWords(Array(20).fill("")); setResults([]); setTotalHints(0); setHints(0); setSelectedGrade(null); setHintedPos([]); }}>
               ✕ Clear All Words
             </button>
           </div>
